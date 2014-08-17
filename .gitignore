@@ -1,0 +1,8 @@
+dist
+*.o
+*.hi
+*.chi
+*.chs.h
+README.html
+tmp
+opn
