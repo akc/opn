@@ -1,0 +1,17 @@
+name:                opn
+version:             0.1.0
+synopsis:            Open files or URLs using associated programs.
+-- description:         
+homepage:            http://github.com/akc/opn
+license:             BSD3
+license-file:        LICENSE
+author:              Anders Claesson
+maintainer:          anders.claesson@gmail.com
+build-type:          Simple
+cabal-version:       >=1.8
+
+executable opn
+  main-is:             opn.hs
+  ghc-options:         -Wall
+  build-depends:       base ==4.6.*, ini, text, process,
+                       network, directory, filepath
