@@ -13,5 +13,5 @@ cabal-version:       >=1.8
 executable opn
   main-is:             opn.hs
   ghc-options:         -Wall
-  build-depends:       base ==4.6.*, ini, text, process,
-                       network, directory, filepath
+  build-depends:       base ==4.6.*, ini, text, unordered-containers,
+                       process, network-uri, directory, filepath
