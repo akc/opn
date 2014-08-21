@@ -25,12 +25,12 @@ type MimeType  = Text
 type Extension = Text
 
 lookupBrowser :: Ini -> Command
-lookupBrowser = either error id . lookupValue "BROWSER" "browser"
+lookupBrowser = either error id . lookupValue "browser" "browser"
 
 lookupCommand :: Ini -> Extension -> Maybe Command
 lookupCommand (Ini ini) ext =
-    case M.lookup "ASSOCIATIONS" ini of
-        Nothing   -> error "Couldn't find required section 'ASSOCIATIONS'"
+    case M.lookup "associations" ini of
+        Nothing   -> error "Couldn't find required section 'associations'"
         Just cmds -> T.strip `fmap` M.lookup (T.drop 1 ext) cmds
 
 getMimeType :: FilePath -> IO MimeType
