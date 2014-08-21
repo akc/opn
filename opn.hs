@@ -6,12 +6,13 @@
 --
 
 import           Data.Maybe (catMaybes)
+import           Data.Functor ((<$>))
 import           Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as M
-import           Data.Ini --(Ini(..), parseIni)
+import           Data.Ini (Ini(..), parseIni)
 import           Control.Monad (forM_)
 import           System.Process (runProcess, readProcess)
 import           System.Environment (getArgs)
@@ -21,31 +22,32 @@ import           Network.URI (isAbsoluteURI)
 import           Opn.MimeType (guessExtensions)
 
 type Command   = Text
+type Browser   = Command
 type PathOrURL = String
-type MimeType  = Text
+type Homedir   = String
 type Extension = Text
-type Assoc     = HashMap Extension Command
+type ECMap     = HashMap Extension Command
+type Config    = (Browser, ECMap)
 
-lookupCommand :: Assoc -> Extension -> Maybe Command
-lookupCommand assoc ext = T.strip `fmap` M.lookup (T.drop 1 ext) assoc
-
-getMimeType :: FilePath -> IO MimeType
-getMimeType fpath = fmap
-    (T.pack . drop 1 . reverse . takeWhile (/= ':') . drop 1 . reverse)
-    (readProcess "file" ["--mime-type", "-L", fpath] "")
+lookupCommand :: ECMap -> Extension -> Maybe Command
+lookupCommand m ext = T.strip <$> M.lookup (T.drop 1 ext) m
 
 getExtensions :: FilePath -> IO [Extension]
-getExtensions fpath = do
-    es <- guessExtensions `fmap` getMimeType fpath
-    return $ case takeExtension fpath of { [] -> es; e -> T.pack e : es }
+getExtensions fpath =
+    (ext ++) <$> guessExtensions <$> mimeType
+  where
+    ext = case takeExtension fpath of { [] -> []; e -> [T.pack e]}
+    mimeType = getValue <$> runFileCmd
+    getValue = T.pack . drop 1 . reverse . takeWhile (/= ':') . drop 1 . reverse
+    runFileCmd = readProcess "file" ["--mime-type", "-L", fpath] ""
 
-getCommand :: (Text, Assoc) -> PathOrURL -> IO Command
-getCommand (browser, assoc) s = do
+getCommand :: Config -> PathOrURL -> IO Command
+getCommand (browser, m) s = do
     fileExists <- doesFileExist s
     if fileExists
         then do
             exts <- getExtensions s
-            case catMaybes (map (lookupCommand assoc) exts) of
+            case catMaybes (map (lookupCommand m) exts) of
                 []      -> return browser
                 (cmd:_) -> return cmd
         else
@@ -54,25 +56,28 @@ getCommand (browser, assoc) s = do
                 else error (show s ++
                        " is neither a file-path nor an absolute URL")
 
-readConfig :: FilePath -> IO Ini
-readConfig home = do
+read_opnrc :: Homedir -> IO Ini
+read_opnrc home = do
     opnrcExists <- doesFileExist opnrc
     if opnrcExists
-        then (either error id . parseIni . adjust) `fmap` T.readFile opnrc
+        then (either error id . parseIni . adjust) <$> T.readFile opnrc
         else error (opnrc ++ " does not exist (you need to create it)")
   where
     opnrc = home </> ".opnrc"
     adjust = T.unlines . map T.stripStart . T.lines
 
-trConfig :: Ini -> (Command, Assoc)
-trConfig (Ini ini) = (browser, d)
+mkConfig :: Ini -> Config
+mkConfig (Ini ini) = (browser, d)
   where
-    d = M.fromList $ M.toList cmdDict >>= \(c,es) -> [(e,c) | e <- T.words es]
-    browser  = let s = "browser" in maybe (errKey s) id $ M.lookup s (fndSec s)
-    cmdDict  = fndSec "associations"
-    fndSec s = maybe (errSec s) id $ M.lookup s ini
+    d = M.fromList $ M.toList cmdMap >>= \(c,es) -> [(e,c) | e <- T.words es]
+    browser  = let s = "browser" in maybe (errKey s) id $ M.lookup s (getSec s)
+    cmdMap   = getSec "associations"
+    getSec s = maybe (errSec s) id $ M.lookup s ini
     errSec s = error $ "Couldn't find required section " ++ show s
     errKey s = error $ "Couldn't find required key "     ++ show s
+
+readConfig :: Homedir -> IO Config
+readConfig = fmap mkConfig . read_opnrc
 
 run :: Command -> [String] -> IO ()
 run cmd args =
@@ -85,6 +90,6 @@ main = do
     if null args
         then putStrLn "usage: opn (file | url)..."
         else do
-            conf <- trConfig `fmap` (readConfig =<< getHomeDirectory)
+            conf <- readConfig =<< getHomeDirectory
             forM_ args $ \s ->
                 getCommand conf s >>= \cmd -> run cmd [s]
