@@ -8,8 +8,9 @@
 import           Data.Maybe (catMaybes)
 import           Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.IO as T
 import qualified Data.HashMap.Strict as M
-import           Data.Ini (Ini(..), readIniFile, lookupValue)
+import           Data.Ini (Ini(..), parseIni, lookupValue)
 import           Control.Monad (forM_)
 import           System.Process (runProcess, readProcess)
 import           System.Environment (getArgs)
@@ -30,7 +31,7 @@ lookupCommand :: Ini -> Extension -> Maybe Command
 lookupCommand (Ini ini) ext =
     case M.lookup "ASSOCIATIONS" ini of
         Nothing   -> error "Couldn't find required section 'ASSOCIATIONS'"
-        Just cmds -> M.lookup (T.drop 1 ext) cmds
+        Just cmds -> T.strip `fmap` M.lookup (T.drop 1 ext) cmds
 
 getMimeType :: FilePath -> IO MimeType
 getMimeType fpath = fmap
@@ -59,6 +60,16 @@ getCommand conf s = do
                 else error (show s ++
                        " is neither a file-path nor an absolute URL")
 
+readConfig :: FilePath -> IO Ini
+readConfig home = do
+    opnrcExists <- doesFileExist opnrc
+    if opnrcExists
+        then (either error id . parseIni . adjust) `fmap` T.readFile opnrc
+        else error (opnrc ++ " does not exist (you need to create it)")
+  where
+    opnrc = home </> ".opnrc"
+    adjust = T.unlines . map T.stripStart . T.lines
+
 run :: Command -> [String] -> IO ()
 run cmd args =
     runProcess (T.unpack cmd) args Nothing Nothing Nothing Nothing Nothing >>
@@ -70,6 +81,6 @@ main = do
     if null args
         then putStrLn "usage: opn (file | url)..."
         else do
-            home <- getHomeDirectory
-            conf <- either error id `fmap` readIniFile (home </> ".opnrc")
-            forM_ args $ \s -> getCommand conf s >>= \cmd -> run cmd [s]
+            conf <- readConfig =<< getHomeDirectory
+            forM_ args $ \s ->
+                getCommand conf s >>= \cmd -> run cmd [s]
