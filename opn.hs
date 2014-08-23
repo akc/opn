@@ -37,13 +37,13 @@ name :: String
 name = "opn 0.1.0"
 
 optsParser :: Parser (Maybe Opts)
-optsParser = hiddenHelp <*> versionParser <|> (Just <$> (Opts
-    <$> switch (long "dry-run" <> dryHelp)
+optsParser = hiddenHelp <*> versionOpt <|> (Just <$> (Opts
+    <$> switch (long "dry-run" <> dryrunHelp)
     <*> some (argument str (metavar "PATHS..."))))
   where
-    dryHelp = help "Display command(s) that would be executed, then exit." )
+    dryrunHelp = help "Display command(s) that would be executed, then exit."
     hiddenHelp = abortOption ShowHelpText $ hidden <> short 'h' <> long "help"
-    versionParser = flag' Nothing (long "version")
+    versionOpt = flag' Nothing (long "version")
 
 lookupCommand :: ECMap -> Extension -> Maybe Command
 lookupCommand m ext = T.strip <$> M.lookup ext m
@@ -58,19 +58,17 @@ getExtensions fpath =
     runFileCmd = readProcess "file" ["--mime-type", "-L", fpath] ""
 
 getCommand :: Config -> PathOrURL -> IO Command
-getCommand (browser, m) s = do
-    fileExists <- doesFileExist s
-    if fileExists
-        then do
-            exts <- getExtensions s
-            case mapMaybe (lookupCommand m) exts of
-                []      -> return browser
-                (cmd:_) -> return cmd
-        else
-            if isAbsoluteURI s
-                then return browser
-                else error (show s ++
-                       " is neither a file-path nor an absolute URL")
+getCommand (browser, m) s = doesFileExist s >>= getCmd
+  where
+    getCmd True = do
+        exts <- getExtensions s
+        case mapMaybe (lookupCommand m) exts of
+            []      -> return browser
+            (cmd:_) -> return cmd
+    getCmd False =
+        if isAbsoluteURI s
+            then return browser
+            else error (show s ++ " is neither a file-path nor an absolute URL")
 
 readOpnrc :: Homedir -> IO Ini
 readOpnrc home = do
