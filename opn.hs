@@ -5,17 +5,16 @@
 -- License     : BSD-3
 --
 
-import           Data.Maybe (catMaybes)
-import           Data.Functor ((<$>))
+import           Data.Maybe (mapMaybe, fromMaybe)
 import           Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as M
 import           Data.Ini (Ini(..), parseIni)
-import           Control.Monad (forM_)
+import           Options.Applicative
+import           Control.Monad (forM_, void)
 import           System.Process (runProcess, readProcess)
-import           System.Environment (getArgs)
 import           System.FilePath (takeExtension, (</>))
 import           System.Directory (doesFileExist, getHomeDirectory)
 import           Network.URI (isAbsoluteURI)
@@ -28,6 +27,23 @@ type Homedir   = String
 type Extension = Text
 type ECMap     = HashMap Extension Command
 type Config    = (Browser, ECMap)
+
+data Opts = Opts
+    { dryrun  :: Bool
+    , paths   :: [String]
+    }
+
+name :: String
+name = "opn 0.1.0"
+
+optsParser :: Parser (Maybe Opts)
+optsParser = hiddenHelp <*> versionParser <|> (Just <$> (Opts
+    <$> switch (long "dry-run" <> dryHelp)
+    <*> some (argument str (metavar "PATHS..."))))
+  where
+    dryHelp = help "Display command(s) that would be executed, then exit." )
+    hiddenHelp = abortOption ShowHelpText $ hidden <> short 'h' <> long "help"
+    versionParser = flag' Nothing (long "version")
 
 lookupCommand :: ECMap -> Extension -> Maybe Command
 lookupCommand m ext = T.strip <$> M.lookup ext m
@@ -47,7 +63,7 @@ getCommand (browser, m) s = do
     if fileExists
         then do
             exts <- getExtensions s
-            case catMaybes (map (lookupCommand m) exts) of
+            case mapMaybe (lookupCommand m) exts of
                 []      -> return browser
                 (cmd:_) -> return cmd
         else
@@ -56,8 +72,8 @@ getCommand (browser, m) s = do
                 else error (show s ++
                        " is neither a file-path nor an absolute URL")
 
-read_opnrc :: Homedir -> IO Ini
-read_opnrc home = do
+readOpnrc :: Homedir -> IO Ini
+readOpnrc home = do
     opnrcExists <- doesFileExist opnrc
     if opnrcExists
         then (either error id . parseIni . adjust) <$> T.readFile opnrc
@@ -70,26 +86,28 @@ mkConfig :: Ini -> Config
 mkConfig (Ini ini) = (browser, d)
   where
     d = M.fromList $ M.toList cmdMap >>= \(c,es) -> [(e,c) | e <- T.words es]
-    browser  = let s = "browser" in maybe (errKey s) id $ M.lookup s (getSec s)
+    browser  = let s = "browser" in fromMaybe (errKey s) $ M.lookup s (getSec s)
     cmdMap   = getSec "associations"
-    getSec s = maybe (errSec s) id $ M.lookup s ini
+    getSec s = fromMaybe (errSec s) $ M.lookup s ini
     errSec s = error $ "Couldn't find required section " ++ show s
     errKey s = error $ "Couldn't find required key "     ++ show s
 
 readConfig :: Homedir -> IO Config
-readConfig = fmap mkConfig . read_opnrc
+readConfig = fmap mkConfig . readOpnrc
 
 run :: Command -> [String] -> IO ()
-run cmd args =
-    runProcess (T.unpack cmd) args Nothing Nothing Nothing Nothing Nothing >>
-    return ()
+run cmd args = void $
+    runProcess (T.unpack cmd) args Nothing Nothing Nothing Nothing Nothing
+
+opn :: Maybe Opts -> IO ()
+opn Nothing     = putStrLn name
+opn (Just opts) = do
+    conf <- readConfig =<< getHomeDirectory
+    forM_ (paths opts) $ \path ->
+        getCommand conf path >>= \cmd -> run' cmd [path]
+  where
+    run' = if dryrun opts then \c [s] -> T.putStr c >> putStrLn (' ':s) else run
 
 main :: IO ()
-main = do
-    args <- getArgs
-    if null args
-        then putStrLn "usage: opn (file | url)..."
-        else do
-            conf <- readConfig =<< getHomeDirectory
-            forM_ args $ \s ->
-                getCommand conf s >>= \cmd -> run cmd [s]
+main =
+    customExecParser (prefs showHelpOnError) (info optsParser fullDesc) >>= opn
