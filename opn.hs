@@ -30,7 +30,7 @@ type ECMap     = HashMap Extension Command
 type Config    = (Browser, ECMap)
 
 lookupCommand :: ECMap -> Extension -> Maybe Command
-lookupCommand m ext = T.strip <$> M.lookup (T.drop 1 ext) m
+lookupCommand m ext = T.strip <$> M.lookup ext m
 
 getExtensions :: FilePath -> IO [Extension]
 getExtensions fpath =
