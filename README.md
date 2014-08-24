@@ -7,7 +7,7 @@
 ```
 
 The `opn` command lets you open files and URLs with associated
-programs. It's designed to "just work" and to be trivial to
+programs. It's intended to "just work" and to be trivial to
 configure. Its configuration resides in `~/.opnconfig`; here's an
 example:
 
@@ -25,7 +25,7 @@ djview:   .djvu
 
 With this configuration, PDFs would open in `mupdf`; Haskell, Python and
 C source files in `emacs`, etc.  If asked to open a file with no
-matching extension, or a file without an extension `opn` tries to be a
+matching extension, or a file without an extension, `opn` tries to be a
 bit smart. If, for example, one runs
 
 ```
@@ -34,7 +34,7 @@ opn foo.h
 
 then the header file `bar.h` would be opened in `emacs`. The reason is
 that such files have mime type `text/x-c`, and, as files with the
-extension `'.c'` shares this mime type, `opn` guesses that `'.h'` files
+extension `'.c'` shares this mime type, `opn` "guesses" that `'.h'` files
 also should be opened with `emacs`.
 
 Both `[browser]` and `[associations]` sections must be present and
