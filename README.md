@@ -7,8 +7,9 @@
 ```
 
 The `opn` command lets you open files and URLs with associated
-programs. It's designed to just work and to be trivial to configure. Its
-configuration resides in `~/.opnrc`; here's an example:
+programs. It's designed to "just work" and to be trivial to
+configure. Its configuration resides in `~/.opnconfig`; here's an
+example:
 
 ```
 [browser]
@@ -36,15 +37,17 @@ that such files have mime type `text/x-c`, and, as files with the
 extension `'.c'` shares this mime type, `opn` guesses that `'.h'` files
 also should be opened with `emacs`.
 
-Both `[browser]` and `[associations]` sections must be present in
-`~/.opnrc`. The `browser` key must also be set. So a minimal
-configuration looks like this:
+Both `[browser]` and `[associations]` sections must be present and
+nonempty in `~/.opnconfig`. The `[browser]` section should in fact
+always have exactly one key, namely `browser`. So a (close to) minimal
+configuration looks something like this:
 
 ```
 [browser]
 browser: chromium
 
 [associations]
+chromium: html
 ```
 
 The `browser` is used for URLs and as a fallback, so with this
@@ -63,5 +66,5 @@ export BROWSER=opn
 ```
 
 in your `.bashrc`, or something similar for your favorite shell, will
-"trick" `chromium` and `xdg-open` into using `opn`. This is in fact my
-own main use for `opn`.
+"trick" `chromium` and `xdg-open` into using `opn`. This is my own main
+use for `opn`.

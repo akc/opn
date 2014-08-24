@@ -13,7 +13,8 @@ import           Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as M
 import           Data.Ini (Ini(..), parseIni)
 import           Options.Applicative
-import           Control.Monad (forM_, void)
+import           Control.Monad (forM_, void, unless)
+import           System.IO (hPutStrLn, stderr)
 import           System.Process (runProcess, readProcess)
 import           System.FilePath (takeExtension, (</>))
 import           System.Directory (doesFileExist, getHomeDirectory)
@@ -70,14 +71,16 @@ getCommand (browser, m) s = doesFileExist s >>= getCmd
             then return browser
             else error (show s ++ " is neither a file-path nor an absolute URL")
 
-readOpnrc :: Homedir -> IO Ini
-readOpnrc home = do
-    opnrcExists <- doesFileExist opnrc
-    if opnrcExists
-        then (either error id . parseIni . adjust) <$> T.readFile opnrc
-        else error (opnrc ++ " does not exist (you need to create it)")
+readIni :: Homedir -> IO Ini
+readIni home = do
+    opnconfigExists <- doesFileExist opnconfig
+    unless opnconfigExists $ do
+        hPutStrLn stderr (opnconfig ++ " does not exist; creating a stub.")
+        T.writeFile opnconfig
+            "[browser]\nbrowser: chromium\n\n[associations]\nchromium: html\n"
+    (either error id . parseIni . adjust) <$> T.readFile opnconfig
   where
-    opnrc = home </> ".opnrc"
+    opnconfig = home </> ".opnconfig"
     adjust = T.unlines . map T.stripStart . T.lines
 
 mkConfig :: Ini -> Config
@@ -91,7 +94,7 @@ mkConfig (Ini ini) = (browser, d)
     errKey s = error $ "Couldn't find required key "     ++ show s
 
 readConfig :: Homedir -> IO Config
-readConfig = fmap mkConfig . readOpnrc
+readConfig = fmap mkConfig . readIni
 
 run :: Command -> [String] -> IO ()
 run cmd args = void $
