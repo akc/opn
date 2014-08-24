@@ -3,6 +3,7 @@ dist
 *.hi
 *.chi
 *.chs.h
+opn.html
 README.html
 tmp
 opn
