@@ -32,7 +32,7 @@ bit smart. If, for example, one runs
 opn foo.h
 ```
 
-then the header file `bar.h` would be opened in `emacs`. The reason is
+then the header file `foo.h` would be opened in `emacs`. The reason is
 that such files have mime type `text/x-c`, and, as files with the
 extension `'.c'` shares this mime type, `opn` "guesses" that `'.h'` files
 also should be opened with `emacs`.

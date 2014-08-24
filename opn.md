@@ -37,7 +37,7 @@ and start with `';'` or `'#'`.
 
 If asked to open a file with no matching extension, or a file without an
 extension, `opn` tries to be a bit smart. For example, a header file, say
-`bar.h`, would be opened in `emacs`. The reason is that header files
+`foo.h`, would be opened in `emacs`. The reason is that header files
 have mime type `text/x-c`, the same type as `'.c'` files, and thus `opn`
 "guesses" that `'.h'` files also should be opened with `emacs`.
 
