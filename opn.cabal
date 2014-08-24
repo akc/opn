@@ -1,13 +1,18 @@
 name:                opn
 version:             0.1.0
 synopsis:            Open files or URLs using associated programs.
--- description:         
+
+description:         The `opn` command lets you open files and URLs with
+                     associated programs. It's intended to "just work" and to
+                     be trivial to configure.
+
 homepage:            http://github.com/akc/opn
 license:             BSD3
 license-file:        LICENSE
 author:              Anders Claesson
 maintainer:          anders.claesson@gmail.com
-build-type:          Simple
+Category:            Application, Console
+Build-type:          Custom
 cabal-version:       >=1.8
 
 executable opn
