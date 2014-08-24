@@ -69,4 +69,5 @@ in your `.bashrc`, or something similar for your favorite shell, will
 "trick" `chromium` and `xdg-open` into using `opn`. This is my own main
 use for `opn`.
 
-For further info see the man page: <https://github.com/akc/opn/opn.md>.
+For further info see the man page:
+<https://github.com/akc/opn/blob/master/opn.md>.
