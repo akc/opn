@@ -13,6 +13,7 @@ author:              Anders Claesson
 maintainer:          anders.claesson@gmail.com
 Category:            Application, Console
 Build-type:          Custom
+Extra-Source-Files:  README.md opn.1
 cabal-version:       >=1.8
 
 executable opn
