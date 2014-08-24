@@ -16,6 +16,10 @@ Build-type:          Custom
 Extra-Source-Files:  README.md opn.1
 cabal-version:       >=1.8
 
+source-repository head
+  type:                git
+  location:            git://github.com/akc/opn.git
+
 executable opn
   main-is:             opn.hs
   ghc-options:         -Wall
