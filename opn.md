@@ -67,10 +67,11 @@ section:
 opn http://akc.is/
 ```
 
-Open all files in the current directory:
+For each file in the current directory display the manner in which it
+would be opened:
 
 ```
-opn *
+opn --dry-run *
 ```
 
 # SEE ALSO

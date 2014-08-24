@@ -58,18 +58,21 @@ getExtensions fpath =
     getValue = T.pack . drop 1 . reverse . takeWhile (/= ':') . drop 1 . reverse
     runFileCmd = readProcess "file" ["--mime-type", "-L", fpath] ""
 
-getCommand :: Config -> PathOrURL -> IO Command
+getCommand :: Config -> PathOrURL -> IO (Maybe Command)
 getCommand (browser, m) s = doesFileExist s >>= getCmd
   where
     getCmd True = do
         exts <- getExtensions s
         case mapMaybe (lookupCommand m) exts of
-            []      -> return browser
-            (cmd:_) -> return cmd
+            []      -> return (Just browser)
+            (cmd:_) -> return (Just cmd)
     getCmd False =
         if isAbsoluteURI s
-            then return browser
-            else error (show s ++ " is neither a file-path nor an absolute URL")
+            then return (Just browser)
+            else do
+                hPutStrLn stderr (show s ++
+                    " is neither a file-path nor an absolute URL; skipping.")
+                return Nothing
 
 readIni :: Homedir -> IO Ini
 readIni home = do
@@ -105,7 +108,10 @@ opn Nothing     = putStrLn name
 opn (Just opts) = do
     conf <- readConfig =<< getHomeDirectory
     forM_ (paths opts) $ \path ->
-        getCommand conf path >>= \cmd -> run' cmd [path]
+        getCommand conf path >>= \c ->
+            case c of
+                Just cmd -> run' cmd [path]
+                Nothing  -> return ()
   where
     run' = if dryrun opts then \c [s] -> T.putStr c >> putStrLn (' ':s) else run
 
