@@ -18,7 +18,7 @@ import           System.Process (runProcess, readProcess)
 import           System.FilePath (takeExtension, (</>))
 import           System.Directory (doesFileExist, getHomeDirectory)
 import           Network.URI (isAbsoluteURI)
-import           Opn.MimeType (guessExtensions)
+import           Opn.Guess (guess)
 
 type Command   = Text
 type Browser   = Command
@@ -50,7 +50,7 @@ lookupCommand m ext = T.strip <$> M.lookup ext m
 
 getExtensions :: FilePath -> IO [Extension]
 getExtensions fpath =
-    (ext ++) <$> guessExtensions <$> mimeType
+    (ext ++) <$> guess <$> mimeType
   where
     ext = case takeExtension fpath of { [] -> []; e -> [T.pack e]}
     mimeType = getValue <$> runFileCmd

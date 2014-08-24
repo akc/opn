@@ -5,18 +5,19 @@
 -- License     : BSD-3
 --
 
-module Opn.MimeType (guessExtensions) where
+module Opn.Guess (guess) where
 
 import           Data.Text (Text)
 import           Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as M
 
-guessExtensions :: Text -> [Text]
-guessExtensions mimeType = M.lookupDefault [] mimeType extFromMimeType
+-- | Guess likely file extensions from a given mime type.
+guess :: Text -> [Text]
+guess mimeType = M.lookupDefault [] mimeType mimeTypeToExtMap
 
 -- Generated from http://www.stdicon.com/mimetypes
-extFromMimeType :: HashMap Text [Text]
-extFromMimeType = M.fromList
+mimeTypeToExtMap :: HashMap Text [Text]
+mimeTypeToExtMap = M.fromList
     [ ("application/andrew-inset",[".ez"])
     , ("application/applixware",[".aw"])
     , ("application/atom+xml",[".atom"])
