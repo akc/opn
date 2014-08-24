@@ -35,7 +35,7 @@ data Opts = Opts
     }
 
 name :: String
-name = "opn 0.1.0"
+name = "opn 0.1.1"
 
 optsParser :: Parser (Maybe Opts)
 optsParser = hiddenHelp <*> versionOpt <|> (Just <$> (Opts

@@ -1,10 +1,11 @@
 name:                opn
-version:             0.1.0
+version:             0.1.1
 synopsis:            Open files or URLs using associated programs.
 
 description:         The `opn` command lets you open files and URLs with
-                     associated programs. It's intended to "just work" and to
-                     be trivial to configure.
+                     associated programs. It's intended to \"just work\" and to
+                     be trivial to configure. See the README at
+                     <https://github.com/akc/opn> for further info.
 
 homepage:            http://github.com/akc/opn
 license:             BSD3
