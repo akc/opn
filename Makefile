@@ -1,4 +1,4 @@
-opn.1: README.md
+opn.1: opn.md
 	pandoc -s -t man opn.md -o opn.1
 
 %.html: %.md

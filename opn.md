@@ -1,6 +1,6 @@
 ---
-title: OPN(1) Opn User Manual | Version 0.1.1
-date: 24 Aug 2014
+title: OPN(1) Opn User Manual | Version 0.1.2
+date: 6 Dec 2014
 ---
 
 # NAME
@@ -36,10 +36,11 @@ key, namely `browser`. Comments must start at the beginning of the line
 and start with `';'` or `'#'`.
 
 If asked to open a file with no matching extension, or a file without an
-extension, `opn` tries to be a bit smart. For example, a header file, say
-`foo.h`, would be opened in `emacs`. The reason is that header files
-have mime type `text/x-c`, the same type as `'.c'` files, and thus `opn`
-"guesses" that `'.h'` files also should be opened with `emacs`.
+extension, `opn` tries to be a bit smart. For example, with the config
+above, a header file, say `foo.h`, would be opened in `emacs`. The
+reason is that header files have mime type `text/x-c`, the same type as
+`'.c'` files, and thus `opn` "guesses" that `'.h'` files also should be
+opened with `emacs`.
 
 # OPTIONS
 
