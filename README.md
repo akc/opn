@@ -6,6 +6,8 @@
     /_/            
 ```
 
+[![Build Status](https://travis-ci.org/akc/opn.svg)](https://travis-ci.org/akc/opn)
+
 The `opn` command lets you open files and URLs with associated
 programs. It's intended to "just work" and to be trivial to
 configure. Its configuration resides in `~/.opnconfig`; here's an
