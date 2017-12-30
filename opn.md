@@ -1,6 +1,6 @@
 ---
-title: OPN(1) Opn User Manual | Version 0.1.2
-date: 6 Dec 2014
+title: OPN(1) Opn User Manual | Version 0.1.3
+date: 30 Dec 2017
 ---
 
 # NAME

@@ -6,6 +6,7 @@
 --
 
 import           Data.Maybe (mapMaybe, fromMaybe)
+import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -35,7 +36,7 @@ data Opts = Opts
     }
 
 name :: String
-name = "opn 0.1.2"
+name = "opn 0.1.3"
 
 optsParser :: Parser (Maybe Opts)
 optsParser = hiddenHelp <*> versionOpt <|> (Just <$> (Opts
