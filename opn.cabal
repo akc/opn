@@ -1,5 +1,5 @@
 name:                opn
-version:             0.1.2
+version:             0.1.3
 synopsis:            Open files or URLs using associated programs.
 
 description:         The `opn` command lets you open files and URLs with
